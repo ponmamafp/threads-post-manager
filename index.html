@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threads 投稿マネージャー | ぽん</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#F9FAFB;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const INITIAL_POSTS = [
+  { id: 1, title: "固定費を放置してる人、年間18万円損してる", hook: "スマホ代、保険料、サブスク。「まぁいいか」で毎月1万5千円、静かに消えてるんですよね。年間にすると18万円。", hookCandidates: [], body: "固定費って、一度見直すと効果がずっと続くんです。\n\nうちの場合：\n・スマホ → 格安SIMで月5,000円減\n・保険 → 不要な特約外して月3,000円減\n・サブスク → 使ってない3つ解約で月2,000円減\n\n合計：月1万円、年間12万円。\n\n「面倒くさい」で放置してる1日を使うだけで、来年の家計が変わります。\n\nこういう「一回やれば終わり」の家計術、他にもプロフィールにまとめてます。", cat: "固定費", status: "draft", scheduleDate: "", scheduleTime: "", priority: 1, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 2, title: "電気代の明細見た？去年より月3,200円高くなってた", hook: "電気代の明細、開いてみたんです。去年の同じ月と比べたら、月3,200円も上がってて。年間にしたら約4万円。何も変えてないのに。", hookCandidates: [], body: "電力会社の料金改定、気づかないうちに反映されてること多いんですよね。\n\n確認すべきは3つ：\n・今の契約プランが最安か\n・アンペア数が適正か\n・新電力への乗り換えで安くなるか\n\n比較サイトで5分調べるだけで、月2,000円以上変わることもあります。\n\n「なんか高いな」で終わらせず、明細を1回ちゃんと見てみてください。", cat: "節約", status: "draft", scheduleDate: "", scheduleTime: "", priority: 2, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 3, title: "ポイ活がんばってたのに全部消えた", hook: "ポイ活がんばってたんです。アプリ5個入れて、レシート撮って、アンケート答えて。3ヶ月で貯まったポイント、2,400円分。", hookCandidates: [], body: "でも気づいたら有効期限切れてて、全部消えてました。\n\n複数サイトでポイント分散すると：\n・管理が追いつかない\n・有効期限がバラバラ\n・少額すぎて使い道がない\n\n今は1つに絞って、貯まったらすぐ使う。これだけ。\n\nポイ活に時間使うより、固定費1個見直すほうが年間で何倍も効果あります。", cat: "ポイ活", status: "draft", scheduleDate: "", scheduleTime: "", priority: 3, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 4, title: "高校就学支援金の申請を忘れずに", hook: "子どもが4月から高校生になるご家庭、就学支援金の申請を忘れずに。年収910万円未満なら授業料がほぼ無料になる制度で、申請しないと一円も戻らないんです。", hookCandidates: [], body: "高等学校等就学支援金、知ってるけど申請してない家庭が毎年かなりあります。\n\n・公立高校：年間11万8,800円\n・私立高校：最大39万6,000円\n\nこれ、申請しないともらえません。入学後に学校から案内が来ますが、見逃す人も多い。\n\n必要書類はマイナンバーカードと課税証明書。4月中に出せば4月分から適用されます。", cat: "支援金", status: "draft", scheduleDate: "", scheduleTime: "", priority: 1, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 5, title: "子ども・子育て支援金（4月から天引開始）", hook: "2026年4月から給料から天引が始まる「子ども・子育て支援金」。月いくら取られるか知ってますか？", hookCandidates: [], body: "", cat: "支援金", status: "draft", scheduleDate: "", scheduleTime: "", priority: 1, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 6, title: "こどもNISAのリアルな活用ガイド", hook: "こどもNISAで毎月1万円積み立てると、18年後にいくらになるか知ってますか？", hookCandidates: [], body: "まず大前提として、旧ジュニアNISAは2023年で新規受付終了。今は新NISAの枚を使います。\n\n親の新NISA口座で子ども用に積み立てるのが現実的。\n\n月1万円×18年×年利5%想定 → 約349万円（元本216万円）\n\n児童手当をそのまま積み立てに回すのが一番ラク。\n\nまずは大人のNISA → 余裕が出たら子ども分を上乗せ、の順番がおすすめです。", cat: "NISA", status: "draft", scheduleDate: "", scheduleTime: "", priority: 4, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 7, title: "家計が勝手に回る仕組み", hook: "家計簿つけなくても、週に1回チラッと見るだけで勝手にお金が残る仕組みがあって。", hookCandidates: [], body: "ポイントは「先取り貯金」と「口座の分け方」。\n\n給料日に自動で：\n・貯金用口座に先取り\n・生活費口座に定額振替\n・残りが自由に使えるお金\n\nこれだけ設定しておけば、家計簿いらない。\n\n週１回、生活費口座の残高をチラッと見るだけ。「今週あといくら使える」がわかるから、自然と使いすぎない。", cat: "家計管理", status: "draft", scheduleDate: "", scheduleTime: "", priority: 5, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 8, title: "入学費用のリアルな金額集計", hook: "入学費用、ネットで調べると「平均○万円」って出てくるけど、知りたいのって「で、あなたの家はいくらだったの？」っていうリアルな声じゃないですか。", hookCandidates: [], body: "", cat: "教育費", status: "draft", scheduleDate: "", scheduleTime: "", priority: 2, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 9, title: "教育費贈与制度（希少性ナッジ）", hook: "教育資金の一括贈与、非課税枠1,500万円の制度。2026年3月末で終了予定って知ってました？", hookCandidates: [], body: "", cat: "教育費", status: "draft", scheduleDate: "", scheduleTime: "", priority: 1, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 10, title: "保険見直し（損失回避ナッジ）", hook: "保険料、毎月いくら払ってるか即答できますか？答えられない人ほど、払いすぎてる可能性が高い。", hookCandidates: [], body: "", cat: "保険", status: "draft", scheduleDate: "", scheduleTime: "", priority: 5, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+  { id: 11, title: "教育費「なんとなく不安」投稿", hook: "教育費、「なんとなく不安」で止まってませんか？公立でも1人850万円以上かかるって、具体的に計算したことありますか？", hookCandidates: [], body: "", cat: "教育費", status: "draft", scheduleDate: "", scheduleTime: "", priority: 3, source: "", usedTemplate: "", valueCheck: "", createdDate: "2026-03-25" },
+];
+
+const INITIAL_TOKUTEN = [
+  { id: 101, name: "固定費カットシミュレーション", type: "スプレッドシート", distributed: 0, lastDate: "", status: "active" },
+  { id: 102, name: "家計グラフ自動生成シート", type: "スプレッドシート", distributed: 0, lastDate: "", status: "active" },
+  { id: 103, name: "教育費シミュレーション", type: "スプレッドシート", distributed: 0, lastDate: "", status: "active" },
+  { id: 104, name: "老後逆算プランナー", type: "スプレッドシート", distributed: 0, lastDate: "", status: "active" },
+  { id: 105, name: "家計挫折タイプ診断", type: "PDF", distributed: 0, lastDate: "", status: "active" },
+  { id: 106, name: "月3万消えてないかチェック", type: "PDF", distributed: 0, lastDate: "", status: "active" },
+  { id: 107, name: "保険見直しガイド", type: "PDF", distributed: 0, lastDate: "", status: "active" },
+  { id: 108, name: "気力ゼロ家計対応マニュアル", type: "PDF", distributed: 0, lastDate: "", status: "active" },
+];
+
+const CAT_COLORS = {"固定費":{bg:"#DBEAFE",text:"#1E40AF"},"教育費":{bg:"#E9D5FF",text:"#6B21A8"},"支援金":{bg:"#D1FAE5",text:"#065F46"},"NISA":{bg:"#FFEDD5",text:"#9A3412"},"ポイ活":{bg:"#FCE7F3",text:"#9D174D"},"節約":{bg:"#FEF9C3",text:"#854D0E"},"家計管理":{bg:"#F3E8FF",text:"#581C87"},"保険":{bg:"#FEE2E2",text:"#991B1B"},"住宅ローン":{bg:"#FEF3C7",text:"#92400E"},"特典":{bg:"#F0FDF4",text:"#166534"},"その他":{bg:"#F3F4F6",text:"#4B5563"}};
+
+const TABS = [{key:"draft",label:"下書き"},{key:"scheduled",label:"投稿予定"},{key:"done",label:"投稿済み"},{key:"tokuten",label:"特典配布"}];
+
+function Badge({cat}){const c=CAT_COLORS[cat]||CAT_COLORS["その他"];return <span style={{background:c.bg,color:c.text,padding:"2px 10px",borderRadius:999,fontSize:11,fontWeight:600}}>{cat}</span>}
+
+function CharCount({text,label,ideal}){const len=(text||"").length;const color=ideal?(len>=ideal[0]&&len<=ideal[1]?"#059669":len>0?"#D97706":"#9CA3AF"):"#6B7280";return <span style={{fontSize:11,color,fontWeight:500}}>{label} {len}文字{ideal&&<span style={{color:"#9CA3AF"}}> / {ideal[0]}-{ideal[1]}</span>}</span>}
+
+function PriorityBadge({p}){if(p>3)return null;const styles={1:{bg:"#FEE2E2",text:"#DC2626",label:"今すぐ"},2:{bg:"#FEF3C7",text:"#D97706",label:"今週中"},3:{bg:"#DBEAFE",text:"#2563EB",label:"来週OK"}};const s=styles[p];return <span style={{background:s.bg,color:s.text,padding:"1px 8px",borderRadius:999,fontSize:10,fontWeight:700}}>{s.label}</span>}
+
+function PostCard({post,onUpdate,onStatusChange}){
+  const[editing,setEditing]=useState(null);const[editVal,setEditVal]=useState("");
+  const startEdit=(field,val)=>{setEditing(field);setEditVal(val||"")};
+  const saveEdit=(field)=>{onUpdate(post.id,field,editVal);setEditing(null)};
+  return(
+    <div style={{background:"#fff",borderRadius:12,padding:16,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.06)",border:"1px solid #E5E7EB"}}>
+      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,flexWrap:"wrap"}}><PriorityBadge p={post.priority}/><Badge cat={post.cat}/></div>
+      {post.source&&<div style={{fontSize:10,color:"#9CA3AF",marginBottom:4}}>出典: {post.source}{post.usedTemplate?` | 型: ${post.usedTemplate}`:""}{post.valueCheck?` | 価値: ${post.valueCheck}`:""}</div>}
+      {editing==="title"?<input value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={()=>saveEdit("title")} onKeyDown={e=>e.key==="Enter"&&saveEdit("title")} autoFocus style={{width:"100%",fontSize:15,fontWeight:700,border:"1px solid #3B82F6",borderRadius:6,padding:"4px 8px",outline:"none",boxSizing:"border-box"}}/>:<h3 onClick={()=>post.status!=="done"&&startEdit("title",post.title)} style={{fontSize:15,fontWeight:700,margin:"0 0 8px",cursor:post.status!=="done"?"pointer":"default",lineHeight:1.4}}>{post.title}</h3>}
+      <div style={{marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+          <span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>1投稿目（フック）</span>
+          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            {post.hookCandidates&&post.hookCandidates.length>0&&<button onClick={()=>onUpdate(post.id,"_showCandidates",!post._showCandidates)} style={{fontSize:10,color:"#3B82F6",background:"#EFF6FF",border:"none",borderRadius:4,padding:"1px 6px",cursor:"pointer"}}>候補{post.hookCandidates.length}本</button>}
+            <CharCount text={post.hook} label="" ideal={[120,150]}/>
+          </div>
+        </div>
+        {post._showCandidates&&post.hookCandidates&&<div style={{background:"#F0F9FF",borderRadius:8,padding:8,marginBottom:6,maxHeight:200,overflow:"auto"}}>{post.hookCandidates.map((c,i)=><div key={i} onClick={()=>{onUpdate(post.id,"hook",c);onUpdate(post.id,"_showCandidates",false)}} style={{fontSize:12,padding:"6px 8px",borderRadius:6,cursor:"pointer",background:c===post.hook?"#DBEAFE":"transparent",marginBottom:2,lineHeight:1.5}}><span style={{color:"#6B7280",fontWeight:600}}>{i+1}. </span>{c}</div>)}</div>}
+        {editing==="hook"?<textarea value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={()=>saveEdit("hook")} autoFocus rows={3} style={{width:"100%",fontSize:13,border:"1px solid #3B82F6",borderRadius:6,padding:8,outline:"none",resize:"vertical",fontFamily:"inherit",boxSizing:"border-box"}}/>:<p onClick={()=>post.status!=="done"&&startEdit("hook",post.hook)} style={{fontSize:13,color:"#374151",margin:0,cursor:post.status!=="done"?"pointer":"default",lineHeight:1.6,background:"#F9FAFB",padding:8,borderRadius:8,minHeight:36}}>{post.hook||<span style={{color:"#9CA3AF"}}>タップして入力...</span>}</p>}
+      </div>
+      {(post.body||editing==="body")?<div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}><span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>2投稿目（解説）</span><CharCount text={post.body} label="" ideal={[400,600]}/></div>{editing==="body"?<textarea value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={()=>saveEdit("body")} autoFocus rows={8} style={{width:"100%",fontSize:13,border:"1px solid #3B82F6",borderRadius:6,padding:8,outline:"none",resize:"vertical",fontFamily:"inherit",boxSizing:"border-box"}}/>:<p onClick={()=>post.status!=="done"&&startEdit("body",post.body)} style={{fontSize:12,color:"#4B5563",margin:0,cursor:post.status!=="done"?"pointer":"default",lineHeight:1.6,background:"#F9FAFB",padding:8,borderRadius:8,whiteSpace:"pre-wrap",maxHeight:120,overflow:"auto"}}>{post.body}</p>}</div>:post.status!=="done"&&<button onClick={()=>startEdit("body","")} style={{fontSize:11,color:"#3B82F6",background:"none",border:"none",cursor:"pointer",padding:0,marginBottom:8}}>+ 2投稿目を追加</button>}
+      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",paddingTop:8,borderTop:"1px solid #F3F4F6"}}>
+        {post.status==="draft"&&<><input type="date" value={post.scheduleDate} onChange={e=>onUpdate(post.id,"scheduleDate",e.target.value)} style={{fontSize:12,border:"1px solid #D1D5DB",borderRadius:6,padding:"3px 6px"}}/><input type="time" value={post.scheduleTime} onChange={e=>onUpdate(post.id,"scheduleTime",e.target.value)} style={{fontSize:12,border:"1px solid #D1D5DB",borderRadius:6,padding:"3px 6px"}}/><button onClick={()=>{if(post.scheduleDate)onStatusChange(post.id,"scheduled")}} disabled={!post.scheduleDate} style={{marginLeft:"auto",fontSize:12,fontWeight:600,color:"#fff",background:post.scheduleDate?"#F59E0B":"#D1D5DB",border:"none",borderRadius:8,padding:"5px 12px",cursor:post.scheduleDate?"pointer":"default"}}>予約する</button></>}
+        {post.status==="scheduled"&&<><span style={{fontSize:12,color:"#92400E"}}>{post.scheduleDate} {post.scheduleTime}</span><button onClick={()=>onStatusChange(post.id,"draft")} style={{fontSize:11,color:"#6B7280",background:"#F3F4F6",border:"none",borderRadius:6,padding:"3px 8px",cursor:"pointer"}}>戻す</button><button onClick={()=>onStatusChange(post.id,"done")} style={{marginLeft:"auto",fontSize:12,fontWeight:600,color:"#fff",background:"#10B981",border:"none",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>投稿完了</button></>}
+        {post.status==="done"&&<span style={{fontSize:12,color:"#059669",fontWeight:600}}>{post.scheduleDate&&`${post.scheduleDate} 投稿済み`}</span>}
+      </div>
+    </div>
+  );
+}
+
+function TokutenCard({item,onUpdate}){
+  return(
+    <div style={{background:"#fff",borderRadius:12,padding:16,marginBottom:10,boxShadow:"0 1px 3px rgba(0,0,0,0.06)",border:"1px solid #E5E7EB"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <div><h3 style={{fontSize:14,fontWeight:700,margin:0}}>{item.name}</h3><span style={{fontSize:11,color:"#6B7280"}}>{item.type}</span></div>
+        <span style={{fontSize:22,fontWeight:800,color:"#3B82F6"}}>{item.distributed}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <button onClick={()=>{if(item.distributed>0){onUpdate(item.id,"distributed",item.distributed-1);onUpdate(item.id,"lastDate",new Date().toISOString().slice(0,10))}}} style={{fontSize:12,fontWeight:600,color:"#fff",background:item.distributed>0?"#EF4444":"#D1D5DB",border:"none",borderRadius:8,padding:"5px 12px",cursor:item.distributed>0?"pointer":"default"}}>-1</button>
+        <button onClick={()=>{onUpdate(item.id,"distributed",item.distributed+1);onUpdate(item.id,"lastDate",new Date().toISOString().slice(0,10))}} style={{fontSize:12,fontWeight:600,color:"#fff",background:"#3B82F6",border:"none",borderRadius:8,padding:"5px 12px",cursor:"pointer"}}>+1 配布</button>
+        {item.lastDate&&<span style={{fontSize:11,color:"#9CA3AF"}}>最終: {item.lastDate}</span>}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const[posts,setPosts]=useState(INITIAL_POSTS);const[tokuten,setTokuten]=useState(INITIAL_TOKUTEN);const[tab,setTab]=useState("draft");const[catFilter,setCatFilter]=useState("all");const[showImport,setShowImport]=useState(false);const[importText,setImportText]=useState("");const[importMsg,setImportMsg]=useState("");
+  const updatePost=(id,field,val)=>setPosts(prev=>prev.map(p=>p.id===id?{...p,[field]:val}:p));
+  const changeStatus=(id,s)=>setPosts(prev=>prev.map(p=>p.id===id?{...p,status:s}:p));
+  const updateTokuten=(id,field,val)=>setTokuten(prev=>prev.map(t=>t.id===id?{...t,[field]:val}:t));
+  const handleImport=()=>{try{const data=JSON.parse(importText);const arr=Array.isArray(data)?data:[data];const maxId=Math.max(...posts.map(p=>p.id),0);const newPosts=arr.map((item,i)=>({id:maxId+i+1,title:item.title||"",hook:item.hook||"",hookCandidates:item.hookCandidates||[],body:item.body||"",cat:item.cat||"その他",status:"draft",scheduleDate:"",scheduleTime:"",priority:item.priority||5,source:item.source||"",usedTemplate:item.usedTemplate||"",valueCheck:item.valueCheck||"",createdDate:item.createdDate||new Date().toISOString().slice(0,10)}));setPosts(prev=>[...prev,...newPosts]);setImportMsg(newPosts.length+"件インポートしました");setImportText("");setTimeout(()=>{setShowImport(false);setImportMsg("")},1500)}catch(e){setImportMsg("JSONの形式が正しくありません")}};
+  const handleExport=()=>{const data=JSON.stringify(posts,null,2);const blob=new Blob([data],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="threads_posts_backup_"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url)};
+  const filtered=posts.filter(p=>p.status===tab).filter(p=>catFilter==="all"||p.cat===catFilter).sort((a,b)=>(a.priority||99)-(b.priority||99));
+  const counts={draft:posts.filter(p=>p.status==="draft").length,scheduled:posts.filter(p=>p.status==="scheduled").length,done:posts.filter(p=>p.status==="done").length,tokuten:tokuten.length};
+  const cats=[...new Set(posts.filter(p=>p.status===tab).map(p=>p.cat))];
+  const totalDistributed=tokuten.reduce((s,t)=>s+t.distributed,0);
+  return(
+    <div style={{maxWidth:540,margin:"0 auto",padding:"12px 10px",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",background:"#F9FAFB",minHeight:"100vh"}}>
+      <div style={{textAlign:"center",marginBottom:16,position:"relative"}}>
+        <h1 style={{fontSize:18,fontWeight:800,margin:"0 0 2px",color:"#111827"}}>Threads 投稿マネージャー</h1>
+        <p style={{fontSize:12,color:"#6B7280",margin:0}}>ぽん | 家計管理FPママ</p>
+        <div style={{position:"absolute",right:0,top:4,display:"flex",gap:4}}>
+          <button onClick={handleExport} style={{fontSize:10,color:"#6B7280",background:"#F3F4F6",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer"}}>保存</button>
+          <button onClick={()=>setShowImport(true)} style={{fontSize:11,fontWeight:700,color:"#fff",background:"#3B82F6",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>+ インポート</button>
+        </div>
+      </div>
+      {showImport&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}}><div style={{background:"#fff",borderRadius:16,padding:20,width:"100%",maxWidth:480,maxHeight:"80vh",overflow:"auto"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><h2 style={{fontSize:16,fontWeight:700,margin:0}}>投稿データをインポート</h2><button onClick={()=>{setShowImport(false);setImportMsg("")}} style={{fontSize:18,color:"#6B7280",background:"none",border:"none",cursor:"pointer"}}>x</button></div><p style={{fontSize:12,color:"#6B7280",margin:"0 0 10px"}}>ポスターが生成したJSONの中身をペースト</p><textarea value={importText} onChange={e=>setImportText(e.target.value)} placeholder='[{"title":"...", "hook":"...", "body":"...", "cat":"固定費", "priority":1}]' rows={10} style={{width:"100%",fontSize:12,border:"1px solid #D1D5DB",borderRadius:8,padding:10,fontFamily:"monospace",resize:"vertical",boxSizing:"border-box"}}/>{importMsg&&<p style={{fontSize:12,color:importMsg.includes("しました")?"#059669":"#DC2626",margin:"8px 0 0",fontWeight:600}}>{importMsg}</p>}<div style={{display:"flex",gap:8,marginTop:12}}><button onClick={handleImport} disabled={!importText.trim()} style={{flex:1,fontSize:13,fontWeight:700,color:"#fff",background:importText.trim()?"#3B82F6":"#D1D5DB",border:"none",borderRadius:10,padding:"10px 0",cursor:importText.trim()?"pointer":"default"}}>インポート実行</button><button onClick={()=>{setShowImport(false);setImportMsg("")}} style={{fontSize:13,color:"#6B7280",background:"#F3F4F6",border:"none",borderRadius:10,padding:"10px 16px",cursor:"pointer"}}>キャンセル</button></div></div></div>}
+      <div style={{display:"flex",gap:3,marginBottom:14,background:"#E5E7EB",borderRadius:10,padding:3}}>{TABS.map(t=><button key={t.key} onClick={()=>{setTab(t.key);setCatFilter("all")}} style={{flex:1,fontSize:12,fontWeight:tab===t.key?700:500,color:tab===t.key?"#111827":"#6B7280",background:tab===t.key?"#fff":"transparent",border:"none",borderRadius:8,padding:"7px 0",cursor:"pointer"}}>{t.label} ({counts[t.key]})</button>)}</div>
+      {tab==="tokuten"?<><div style={{background:"#EFF6FF",borderRadius:10,padding:12,marginBottom:12,textAlign:"center"}}><span style={{fontSize:12,color:"#1E40AF"}}>累計配布数</span><div style={{fontSize:28,fontWeight:800,color:"#1E40AF"}}>{totalDistributed}</div></div>{tokuten.map(t=><TokutenCard key={t.id} item={t} onUpdate={updateTokuten}/>)}</>:<>
+        {tab==="draft"&&cats.length>1&&<div style={{display:"flex",gap:4,marginBottom:12,flexWrap:"wrap"}}><button onClick={()=>setCatFilter("all")} style={{fontSize:10,fontWeight:catFilter==="all"?700:400,color:catFilter==="all"?"#1E40AF":"#6B7280",background:catFilter==="all"?"#DBEAFE":"#F3F4F6",border:"none",borderRadius:999,padding:"2px 8px",cursor:"pointer"}}>すべて</button>{cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{fontSize:10,fontWeight:catFilter===c?700:400,color:(CAT_COLORS[c]||CAT_COLORS["その他"]).text,background:catFilter===c?(CAT_COLORS[c]||CAT_COLORS["その他"]).bg:"#F3F4F6",border:"none",borderRadius:999,padding:"2px 8px",cursor:"pointer"}}>{c}</button>)}</div>}
+        {tab==="draft"&&filtered.length>0&&<div style={{background:"#FFFBEB",borderRadius:8,padding:"6px 10px",marginBottom:10,fontSize:11,color:"#92400E"}}>優先度順に表示中（「今すぐ」→「今週中」→「来週OK」→その他）</div>}
+        {filtered.length===0?<div style={{textAlign:"center",padding:40,color:"#9CA3AF"}}><p style={{fontSize:14}}>{tab==="draft"?"下書きはありません":tab==="scheduled"?"予約投稿はありません":"投稿済みはまだありません"}</p></div>:filtered.map(p=><PostCard key={p.id} post={p} onUpdate={updatePost} onStatusChange={changeStatus}/>)}
+      </>}
+      <div style={{textAlign:"center",padding:"16px 0 30px",fontSize:10,color:"#9CA3AF"}}>投稿{posts.length}件 | 下書き{counts.draft} | 予約{counts.scheduled} | 済{counts.done} | 特典{tokuten.length}種</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
